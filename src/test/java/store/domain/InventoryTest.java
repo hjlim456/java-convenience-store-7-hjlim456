@@ -22,7 +22,7 @@ class InventoryTest {
     @DisplayName("상품 구매시 Inventory의 재고가 차감됨을 확인한다.")
     @Test
     void 상품_구매시_재고_차감_테스트() {
-        inventory.purchaseProduct("콜라", 1);
+        inventory.sellProduct("콜라", 1);
         Assertions.assertThat(inventory.getProductByName("콜라").getQuantity()).isEqualTo(9);
     }
 
@@ -30,7 +30,7 @@ class InventoryTest {
     @Test
     void 구매수량이_재고를_초과시_예외_테스트() {
 
-        Assertions.assertThatThrownBy(() -> inventory.purchaseProduct("콜라", 100))
+        Assertions.assertThatThrownBy(() -> inventory.sellProduct("콜라", 100))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("[ERROR] 재고 수량을 초과하여 구매할 수 없습니다. 다시 입력해 주세요.");
     }

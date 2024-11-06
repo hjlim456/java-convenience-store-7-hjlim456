@@ -40,7 +40,7 @@ public class Promotion {
         return endDate;
     }
 
-    public static Promotion createPromotion(String line) {
+    public static Promotion create(String line) {
         String[] parts = line.split(LINE_SPLIT_SEPARATOR);
         String name = parts[0];
         int buy = Integer.parseInt(parts[1]);
