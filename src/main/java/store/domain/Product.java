@@ -4,7 +4,6 @@ import java.util.stream.Stream;
 
 public class Product {
     private final static String LINE_SPLIT_SEPARATOR = ",";
-    private final static int MIN_PRODUCT_COUNT = 1;
 
 
     private final String name;
@@ -47,20 +46,5 @@ public class Product {
         Promotion promotion = Promotions.getPromotionByName(parts[3]);
 
         return new Product(name, price, quantity, promotion);
-    }
-
-    public static String getQuantityInfo(int quantity) {
-        return Stream.of(quantity)
-                .filter(q -> q >= MIN_PRODUCT_COUNT)
-                .map(q -> q + "개")
-                .findFirst()
-                .orElse("재고없음");
-    }
-
-    public static String getPromotionNameInfo(String promotionName) {
-        return Stream.of(promotionName)
-                .filter(name -> !name.equals("none"))
-                .findFirst()
-                .orElse("");
     }
 }
