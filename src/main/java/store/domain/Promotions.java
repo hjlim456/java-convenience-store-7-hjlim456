@@ -11,6 +11,13 @@ public class Promotions {
     public Promotions(String filePath) {
         initializeFromFile(filePath);
     }
+
+    public static Promotion getPromotionByName(String input) {
+        return promotions.stream()
+                .filter(promotion -> promotion.getName().equals(input))
+                .findFirst()
+                .orElse(null);
+    }
     private void initializeFromFile(String filePath) {
         try {
             FileLoader.loadByFilePath(filePath).stream()

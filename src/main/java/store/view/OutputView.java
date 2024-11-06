@@ -12,6 +12,6 @@ public class OutputView {
 
     private static void printProduct(Product product) {
         System.out.printf("- %s %d원 %s개 %s%n",
-                product.getName(), product.getPrice(), product.getQuantity(), product.getPromotion());
+                product.getName(), product.getPrice(), product.getQuantity(), product.getPromotionName());
     }
 }
