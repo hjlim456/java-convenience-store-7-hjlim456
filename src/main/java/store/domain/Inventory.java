@@ -28,4 +28,16 @@ public class Inventory {
             System.out.println("[ERROR] 파일을 읽는 도중 오류가 발생했습니다.");
         }
     }
+    public Product getProductByName(String productName) {
+        return products.stream()
+                .filter(product -> product.getName().equals(productName))
+                .findFirst()
+                .orElseGet(() -> {
+                    throw  new IllegalArgumentException("[ERROR] 존재하지 않는 상품입니다. 다시 입력해 주세요.");
+                });
+    }
+    public void purchaseProduct(String productName, int count) {
+        Product product = getProductByName(productName);
+        product.decreaseQuantity(count);
+    }
 }
