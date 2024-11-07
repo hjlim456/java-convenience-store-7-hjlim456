@@ -131,3 +131,27 @@
 - [ ] 프로모션할인이 적용되지 않는 상품을 구매한 경우 안내메세지에서 N을 입력하면 프로모션적용이 아닌 상품은 구매목록에서 삭제한다
 - [ ] 프로모션 기간이 아닐때 에는 기본상품을 먼저 차감한다.
  ---
+
+## 시퀀스다이어그램
+
+```mermaid
+
+sequenceDiagram
+    participant O as Order
+    participant C as StoreController
+    participant I as Inventory
+    participant prd as Product
+    participant prm as Promotions
+
+    C ->> C: 1. 품명,수량입력받기<br>( Map<String, int> Order타입으로받기)
+    C ->> I: 2. getProducts(Order)
+    I ->> prd: 2-1.if(isTodayInPromotionPeriod())<br> -행사상품차감,이때 증정갯수반환<br> - 기본상품차감 증정갯수 0 반환<br>둘다 재고없으면 재고부족 안내및 재입력
+    I ->> prm: getFreeCount(Order)
+    prm -->> I: 증정상품반환(new Product(콜라, 2개))
+    prd -->> I: PromotionResult타입 상품명,증정갯수 반환<br> 및 재고 업데이트
+    
+
+    C ->> O: 3. addProduct(Order)
+
+
+```
