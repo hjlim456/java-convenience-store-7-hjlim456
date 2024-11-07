@@ -33,6 +33,6 @@ class PromotionsTest {
                 .map(Promotion::getName)
                 .toList();
         //then
-        Assertions.assertThat(ongoingPromotionNames).containsExactlyInAnyOrder("탄산2+1","MD추천상품","none");
+        Assertions.assertThat(ongoingPromotionNames).containsExactlyInAnyOrder("탄산2+1","MD추천상품");
     }
 }

@@ -36,6 +36,7 @@ public class Promotions {
     public List<Promotion> getTodayPromotions(LocalDate nowDate) {
         return promotions.stream()
                 .filter(promotion -> isWithinPromotionPeriod(promotion, nowDate))
+                .filter(promotion -> !promotion.getName().equals("none")) // "none" 이름 제외
                 .toList();
     }
 
