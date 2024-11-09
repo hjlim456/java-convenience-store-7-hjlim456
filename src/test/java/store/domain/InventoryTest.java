@@ -14,7 +14,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
+import store.StoreController;
 import store.domain.discount.Promotion;
 import store.domain.discount.Promotions;
 
@@ -24,12 +26,15 @@ class InventoryTest {
 
     private Inventory inventory;
     private Promotions promotions;
+    private LocalDate tansanDate;
+    private LocalDate flashdate;
 
     @BeforeEach
     void initProducts() {
         inventory = new Inventory(PRODUCTS_FILE_ADDRESS);
         promotions = new Promotions(PROMOTIONS_FILE_ADDRESS);
-
+        tansanDate = LocalDate.of(2024, 8, 8);
+        flashdate = LocalDate.of(2024, 11, 8);
     }
 
 //    @DisplayName("프로모션 기간중 상품 구매시  프로모션재고가 차감됨을 확인한다.")
@@ -100,6 +105,91 @@ class InventoryTest {
                 Arguments.of("감자칩", false),
                 Arguments.of("콜라", true),
                 Arguments.of("사이다", true)
+        );
+    }
+
+    @DisplayName("프로모션 진행중 일시 프로모션 상품 먼저 차감됨을 확인한다.")
+    @ParameterizedTest
+    @MethodSource("provideColaPromotionStatusAndExpectedQuantity")
+    void 프로모션_진행중_일시_프로모션_상품이_먼저_차감된다(boolean hasPromotion, int expectedQuantity) {
+        //given
+        Map<String, Integer> orderRepository = StoreController.parseOrderString("[콜라-3]");
+        List<Promotion> tansanPromotion = promotions.getOngoingPromotions(tansanDate);
+        //when
+        Map<Product, Integer> purchasedProduct = inventory.getProduct(orderRepository, tansanPromotion);
+        List<Product> cola = inventory.findByName("콜라");
+        //then
+        Product product = cola.stream()
+                .filter(p -> p.hasAnyPromotion() == hasPromotion)
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("[ERROR] 존재하지 않는 상품입니다. 다시 입력해 주세요."));
+
+        Assertions.assertThat(product.getQuantity()).isEqualTo(expectedQuantity);
+    }
+
+    private static Stream<Arguments> provideColaPromotionStatusAndExpectedQuantity() {
+        return Stream.of(
+                Arguments.of(true, 7),
+                Arguments.of(false, 10)
+        );
+    }
+
+
+
+    @DisplayName("프로모션 진행중 일시 프로모션 상품이 모자르면 기본 상품을 차감한다.")
+    @ParameterizedTest
+    @CsvSource({"true,0","false,7"})
+    void 프로모션_진행중_일시_프로모션_상품이_모자르면_기본_상품을_차감한다(boolean hasPromotion, int expectedQuantity) {
+        //given
+        Map<String, Integer> orderRepository = StoreController.parseOrderString("[콜라-13]");
+        List<Promotion> tansanPromotion = promotions.getOngoingPromotions(tansanDate);
+        //when
+        Map<Product, Integer> purchasedProduct = inventory.getProduct(orderRepository, tansanPromotion);
+        List<Product> cola = inventory.findByName("콜라");
+        //then
+        Product product = cola.stream()
+                .filter(p -> p.hasAnyPromotion() == hasPromotion)
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("[ERROR] 존재하지 않는 상품입니다. 다시 입력해 주세요."));
+
+        Assertions.assertThat(product.getQuantity()).isEqualTo(expectedQuantity);
+    }
+
+    @DisplayName("프로모션상품, 기본상품이 모두 떨어지면 발생하는 예외를 확인한다.")
+    @Test
+    void 프로모션상품_기본상품이_모두_떨어지면_예외를_발생한다() {
+        //given
+        Map<String, Integer> orderRepository = StoreController.parseOrderString("[콜라-21]");
+        List<Promotion> tansanPromotion = promotions.getOngoingPromotions(tansanDate);
+        //when
+        Assertions.assertThatThrownBy(() -> inventory.getProduct(orderRepository, tansanPromotion))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("[ERROR] 재고 수량을 초과하여 구매할 수 없습니다. 다시 입력해 주세요.");
+    }
+
+    @DisplayName("프로모션 진행중이 아닐때 기본 상품 먼저 차감됨을 확인한다.")
+    @ParameterizedTest
+    @MethodSource("providePotatoChipPromotionStatusAndExpectedQuantity")
+    void 프로모션_진행중이_아닐떄_기본_상품이_먼저_차감된다(boolean hasPromotion, int expectedQuantity) {
+        //given
+        Map<String, Integer> orderRepository = StoreController.parseOrderString("[감자칩-3]");
+        List<Promotion> tansanPromotion = promotions.getOngoingPromotions(tansanDate);
+        //when
+        Map<Product, Integer> purchasedProduct = inventory.getProduct(orderRepository, tansanPromotion);
+        List<Product> potatochip = inventory.findByName("감자칩");
+        //then
+        Product product = potatochip.stream()
+                .filter(p -> p.hasAnyPromotion() == hasPromotion)
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("[ERROR] 존재하지 않는 상품입니다. 다시 입력해 주세요."));
+
+        Assertions.assertThat(product.getQuantity()).isEqualTo(expectedQuantity);
+    }
+
+    private static Stream<Arguments> providePotatoChipPromotionStatusAndExpectedQuantity() {
+        return Stream.of(
+                Arguments.of(true, 5),
+                Arguments.of(false, 2)
         );
     }
 }
