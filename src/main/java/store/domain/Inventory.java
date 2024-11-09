@@ -2,6 +2,7 @@ package store.domain;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import store.Util.FileLoader;
@@ -39,9 +40,10 @@ public class Inventory {
             System.out.println("[ERROR] 파일을 읽는 도중 오류가 발생했습니다.");
         }
     }
+
     private void  categorizeProduct(List<Product> totalProducts) {
         for (Product product : totalProducts) {
-            if(product.hasPromotion()){
+            if(product.hasAnyPromotion()){
                 promotionProducts.add(product);
             }
             defaultProducts.add(product);
@@ -56,5 +58,13 @@ public class Inventory {
             throw new IllegalArgumentException("[ERROR] 존재하지 않는 상품입니다. 다시 입력해 주세요.");
         }
         return matchedProducts;
+    }
+
+    public static boolean isProductContainTodayPromotion(List<Product> matchedProducts,List<Promotion> todayPromotions) {
+        boolean hasTodayPromotion = matchedProducts.stream()
+                .anyMatch(product -> todayPromotions.stream()
+                        .anyMatch(promotion -> promotion.getName().equals(product.getPromotionName()))
+                );
+        return hasTodayPromotion;
     }
 }
