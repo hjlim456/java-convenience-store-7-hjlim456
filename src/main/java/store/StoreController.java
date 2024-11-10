@@ -101,8 +101,44 @@ public class StoreController {
             membershipDiscountValue = (int) (totalNonPromotionalValue * 0.3);
             membershipDiscountValue = Math.min(membershipDiscountValue, 8000);
         }
+
+        //프로모션 할인 금액
+        int totalFreeItemsValue = freeItems.entrySet().stream()
+                .mapToInt(entry -> entry.getKey().getPrice() * entry.getValue())
+                .sum();
+
+        // 총 구매 금액 계산
+        int totalAmount = purchasedProducts.entrySet().stream()
+                .mapToInt(entry -> entry.getKey().getPrice() * entry.getValue())
+                .sum();
+
+
+        int finalAmount = totalAmount - totalFreeItemsValue - membershipDiscountValue;
+
+        printReceipt(purchasedProducts, freeItems, totalAmount, totalFreeItemsValue, membershipDiscountValue, finalAmount);
+
     }
 
+    private static void printReceipt(Map<Product, Integer> purchasedProducts, Map<Product, Integer> freeItems,
+                                     int totalAmount, int promotionDiscount, int membershipDiscount, int finalAmount) {
+        System.out.println("==============W 편의점================");
+        System.out.println("상품명\t\t수량\t금액");
+
+        purchasedProducts.forEach((product, quantity) -> {
+            System.out.printf("%s\t\t%d\t%,d%n", product.getName(), quantity, product.getPrice() * quantity);
+        });
+
+        System.out.println("=============증\t정===============");
+        freeItems.forEach((product, quantity) -> {
+            System.out.printf("%s\t\t%d%n", product.getName(), quantity);
+        });
+
+        System.out.println("====================================");
+        System.out.printf("총구매액\t\t%d\t%,d%n", purchasedProducts.values().stream().mapToInt(Integer::intValue).sum(), totalAmount);
+        System.out.printf("행사할인\t\t\t-%d%n", promotionDiscount);
+        System.out.printf("멤버십할인\t\t\t-%d%n", membershipDiscount);
+        System.out.printf("내실돈\t\t\t%,d%n", finalAmount);
+    }
 
     public static Map<Product, Integer> calculateFullPriceProducts(Map<String, Integer> orderRepository, Map<Product, Integer> freeItems) {
         Map<Product, Integer> fullPriceProduct = new LinkedHashMap<>();
