@@ -52,9 +52,16 @@ public class Product {
         quantity -= count;
     }
 
-    public boolean hasPromotion() {
+    public void increaseQuantity(int count) {
+        this.quantity += count;
+    }
+
+    public boolean hasAnyPromotion() {
         return !promotionName.equals("none");
-//        return todayPromotions.stream()
-//                .anyMatch(promotion -> promotion.getName().equals(this.promotionName));
+    }
+
+    public boolean hasTodayPromotion(List<Promotion> todayPromotions) {
+        return todayPromotions.stream()
+                .anyMatch(promotion -> promotion.getName().equals(this.promotionName));
     }
 }
