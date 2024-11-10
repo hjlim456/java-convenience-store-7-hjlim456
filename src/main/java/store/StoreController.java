@@ -46,52 +46,63 @@ public class StoreController {
         Map<Product, Integer> fullPriceItems = calculateFullPriceProducts(orderRepository, freeItems);
 
         fullPriceItems.forEach((product, fullPriceQuantity) -> {
-            System.out.printf("안내메세지 : 현재 %s %d개는 프로모션 할인이 적용되지 않습니다. 그래도 구매하시겠습니까? (Y/N)%n", product.getName(), fullPriceQuantity);
-            String userInput = Console.readLine();
+            if (fullPriceQuantity > 0) {
+                System.out.printf("안내메세지 : 현재 %s %d개는 프로모션 할인이 적용되지 않습니다. 그래도 구매하시겠습니까? (Y/N)%n", product.getName(), fullPriceQuantity);
+                String userInput = Console.readLine();
 
-            if (userInput.equalsIgnoreCase("N")) {
-                // 사용자가 'N'을 선택한 경우, fullPriceQuantity만큼 purchasedProducts에서 차감
-                List<Product> matchedProducts = purchasedProducts.keySet().stream()
-                        .filter(p -> p.getName().equals(product.getName()))
-                        .toList();
+                if (userInput.equalsIgnoreCase("N")) {
+                    // 사용자가 'N'을 선택한 경우, fullPriceQuantity만큼 purchasedProducts에서 차감
+                    List<Product> matchedProducts = purchasedProducts.keySet().stream()
+                            .filter(p -> p.getName().equals(product.getName()))
+                            .toList();
 
-                int remainingToDeduct = fullPriceQuantity;
+                    int remainingToDeduct = fullPriceQuantity;
 
-                // 기본 상품(getPromotionName이 "none"인 상품)부터 차감
-                for (Product matchedProduct : matchedProducts) {
-                    if (matchedProduct.getPromotionName().equals("none")) {
-                        int availableQuantity = purchasedProducts.get(matchedProduct);
-                        int quantityToDeduct = Math.min(remainingToDeduct, availableQuantity);
-                        purchasedProducts.put(matchedProduct, availableQuantity - quantityToDeduct);
-                        remainingToDeduct -= quantityToDeduct;
-                        matchedProduct.increaseQuantity(quantityToDeduct);
-
-                        if (remainingToDeduct == 0) break;
-                    }
-                }
-
-                // 프로모션 상품(getPromotionName이 "none"이 아닌 상품)에서 남은 수량 차감
-                if (remainingToDeduct > 0) {
+                    // 기본 상품(getPromotionName이 "none"인 상품)부터 차감
                     for (Product matchedProduct : matchedProducts) {
-                        if (!"none".equals(matchedProduct.getPromotionName())) {
+                        if (matchedProduct.getPromotionName().equals("none")) {
                             int availableQuantity = purchasedProducts.get(matchedProduct);
                             int quantityToDeduct = Math.min(remainingToDeduct, availableQuantity);
                             purchasedProducts.put(matchedProduct, availableQuantity - quantityToDeduct);
                             remainingToDeduct -= quantityToDeduct;
                             matchedProduct.increaseQuantity(quantityToDeduct);
+
+                            if (remainingToDeduct == 0) break;
+                        }
+                    }
+
+                    // 프로모션 상품(getPromotionName이 "none"이 아닌 상품)에서 남은 수량 차감
+                    if (remainingToDeduct > 0) {
+                        for (Product matchedProduct : matchedProducts) {
+                            if (!"none".equals(matchedProduct.getPromotionName())) {
+                                int availableQuantity = purchasedProducts.get(matchedProduct);
+                                int quantityToDeduct = Math.min(remainingToDeduct, availableQuantity);
+                                purchasedProducts.put(matchedProduct, availableQuantity - quantityToDeduct);
+                                remainingToDeduct -= quantityToDeduct;
+                                matchedProduct.increaseQuantity(quantityToDeduct);
+                            }
                         }
                     }
                 }
             }
         });
+        System.out.println("멤버십 할인을 받으시겠습니까? (Y/N)");
+        String membershipAnswer = Console.readLine();
+        int membershipDiscountValue=0;
 
-        purchasedProducts.forEach(((product, integer) -> {
-            System.out.printf("상품명:%s , 상품의행사:%s, 개수:%d",product.getName(),product.getPromotionName(),integer);
-        }));
-        OutputView.printInventory(inventory);
+        if (membershipAnswer.equalsIgnoreCase("Y")) {
+            // 프로모션이 없는 상품의 가격 * 수량 합산
+            int totalNonPromotionalValue = purchasedProducts.entrySet().stream()
+                    .filter(entry -> entry.getKey().getPromotionName().equals("none")) // 프로모션이 없는 상품 필터링
+                    .mapToInt(entry -> entry.getKey().getPrice() * entry.getValue()) // 가격 * 수량 계산
+                    .sum();
 
-
+            // 30% 할인 적용 후 최대 8000원 제한
+            membershipDiscountValue = (int) (totalNonPromotionalValue * 0.3);
+            membershipDiscountValue = Math.min(membershipDiscountValue, 8000);
+        }
     }
+
 
     public static Map<Product, Integer> calculateFullPriceProducts(Map<String, Integer> orderRepository, Map<Product, Integer> freeItems) {
         Map<Product, Integer> fullPriceProduct = new LinkedHashMap<>();
