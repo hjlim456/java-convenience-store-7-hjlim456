@@ -42,7 +42,7 @@ public class StoreController {
         PurchasedProducts purchasedProducts = inventory.requestProduct(orderSheet, ongoingPromotions);
         FreeProducts freeProducts = purchasedProducts.calculateFreeProducts(ongoingPromotions);
 
-        FullPriceProducts fullPriceProducts = freeProducts.calculateFullPriceProducts(orderSheet);
+        FullPriceProducts fullPriceProducts = purchasedProducts.calculateFullPriceProducts(freeProducts);
         purchasedProducts.askBuyFullPriceItems(fullPriceProducts);
 
 

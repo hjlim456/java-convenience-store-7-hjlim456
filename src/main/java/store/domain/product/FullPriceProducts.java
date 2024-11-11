@@ -25,7 +25,6 @@ public class FullPriceProducts {
     public int getMembershipDiscount() {
         System.out.println("\n멤버십 할인을 받으시겠습니까? (Y/N)");
         String userInput = receiveValidatedValue(()-> InputView.readYesOrNo());
-
         if (userInput.equalsIgnoreCase("Y")) {
             int totalNonPromotionalValue = fullPriceProducts.entrySet().stream()
                     .mapToInt(entry -> entry.getKey().getPrice() * entry.getValue())
