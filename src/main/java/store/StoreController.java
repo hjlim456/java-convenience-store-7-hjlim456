@@ -45,7 +45,6 @@ public class StoreController {
         FullPriceProducts fullPriceProducts = purchasedProducts.calculateFullPriceProducts(freeProducts);
         purchasedProducts.askBuyFullPriceItems(fullPriceProducts);
 
-
         OutputView.printReceipt(purchasedProducts, freeProducts, fullPriceProducts);
     }
 

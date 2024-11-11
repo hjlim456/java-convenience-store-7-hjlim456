@@ -149,7 +149,6 @@ public class PurchasedProducts {
     public FullPriceProducts calculateFullPriceProducts(FreeProducts freeProducts) {
         Map<String, Integer> aggregatedQuantities = new LinkedHashMap<>();
 
-        // "none" 프로모션인 경우 그대로 fullPriceProduct에 추가
         purchasedProducts.forEach((product, quantity) -> {
             int fullPriceQuantity = 0;
 
@@ -159,7 +158,6 @@ public class PurchasedProducts {
             if (!product.getPromotionName().equals("none")){
                 int freeCount = freeProducts.getFreeCount(product); // freeItem 갯수를 가져옴
 
-                // 프로모션 이름에 따라 fullPriceQuantity 계산
                 if (product.getPromotionName().equals("탄산2+1")) {
                     fullPriceQuantity = quantity - (freeCount * 3);
                 }
@@ -168,16 +166,13 @@ public class PurchasedProducts {
                 }
             }
 
-            // fullPriceQuantity가 0보다 클 때만 추가
             if (fullPriceQuantity > 0) {
                 aggregatedQuantities.merge(product.getName(), fullPriceQuantity, Integer::sum);
             }
         });
 
-        // 최종적으로 Product 객체와 합산된 수량을 fullPriceProduct에 추가
         Map<Product, Integer> fullPriceProduct = new LinkedHashMap<>();
         aggregatedQuantities.forEach((productName, totalQuantity) -> {
-            // productName에 해당하는 Product 객체를 가져와 fullPriceProduct에 추가
             purchasedProducts.keySet().stream()
                     .filter(product -> product.getName().equals(productName))
                     .findFirst()
