@@ -1,12 +1,7 @@
 package store.domain;
 
-import static store.StoreController.parseOrderString;
-
-import camp.nextstep.edu.missionutils.Console;
-import camp.nextstep.edu.missionutils.DateTimes;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Stream;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,9 +11,13 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
-import store.StoreController;
+import store.domain.order.OrderParser;
+import store.domain.order.OrderSheet;
+import store.domain.product.Inventory;
+import store.domain.product.Product;
 import store.domain.discount.Promotion;
 import store.domain.discount.Promotions;
+import store.domain.product.PurchasedProducts;
 
 class InventoryTest {
     private static final String PROMOTIONS_FILE_ADDRESS = "src/main/resources/promotions.md";
@@ -113,10 +112,10 @@ class InventoryTest {
     @MethodSource("provideColaPromotionStatusAndExpectedQuantity")
     void 프로모션_진행중_일시_프로모션_상품이_먼저_차감된다(boolean hasPromotion, int expectedQuantity) {
         //given
-        Map<String, Integer> orderRepository = StoreController.parseOrderString("[콜라-3]");
+        OrderSheet orderRepository = OrderParser.createByString("[콜라-3]");
         List<Promotion> tansanPromotion = promotions.getOngoingPromotions(tansanDate);
         //when
-        Map<Product, Integer> purchasedProduct = inventory.getProduct(orderRepository, tansanPromotion);
+        PurchasedProducts purchasedProduct = inventory.requestProduct(orderRepository, tansanPromotion);
         List<Product> cola = inventory.findByName("콜라");
         //then
         Product product = cola.stream()
@@ -141,10 +140,10 @@ class InventoryTest {
     @CsvSource({"true,0","false,7"})
     void 프로모션_진행중_일시_프로모션_상품이_모자르면_기본_상품을_차감한다(boolean hasPromotion, int expectedQuantity) {
         //given
-        Map<String, Integer> orderRepository = StoreController.parseOrderString("[콜라-13]");
+        OrderSheet orderRepository = OrderParser.createByString("[콜라-13]");
         List<Promotion> tansanPromotion = promotions.getOngoingPromotions(tansanDate);
         //when
-        Map<Product, Integer> purchasedProduct = inventory.getProduct(orderRepository, tansanPromotion);
+        PurchasedProducts purchasedProduct = inventory.requestProduct(orderRepository, tansanPromotion);
         List<Product> cola = inventory.findByName("콜라");
         //then
         Product product = cola.stream()
@@ -159,10 +158,10 @@ class InventoryTest {
     @Test
     void 프로모션상품_기본상품이_모두_떨어지면_예외를_발생한다() {
         //given
-        Map<String, Integer> orderRepository = StoreController.parseOrderString("[콜라-21]");
+        OrderSheet orderRepository = OrderParser.createByString("[콜라-21]");
         List<Promotion> tansanPromotion = promotions.getOngoingPromotions(tansanDate);
         //when
-        Assertions.assertThatThrownBy(() -> inventory.getProduct(orderRepository, tansanPromotion))
+        Assertions.assertThatThrownBy(() -> inventory.requestProduct(orderRepository, tansanPromotion))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("[ERROR] 재고 수량을 초과하여 구매할 수 없습니다. 다시 입력해 주세요.");
     }
@@ -172,10 +171,10 @@ class InventoryTest {
     @MethodSource("providePotatoChipPromotionStatusAndExpectedQuantity")
     void 프로모션_진행중이_아닐떄_기본_상품이_먼저_차감된다(boolean hasPromotion, int expectedQuantity) {
         //given
-        Map<String, Integer> orderRepository = StoreController.parseOrderString("[감자칩-3]");
+        OrderSheet orderRepository = OrderParser.createByString("[감자칩-3]");
         List<Promotion> tansanPromotion = promotions.getOngoingPromotions(tansanDate);
         //when
-        Map<Product, Integer> purchasedProduct = inventory.getProduct(orderRepository, tansanPromotion);
+        PurchasedProducts purchasedProduct = inventory.requestProduct(orderRepository, tansanPromotion);
         List<Product> potatochip = inventory.findByName("감자칩");
         //then
         Product product = potatochip.stream()

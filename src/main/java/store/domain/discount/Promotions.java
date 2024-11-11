@@ -1,9 +1,7 @@
-package store.domain;
+package store.domain.discount;
 
-import camp.nextstep.edu.missionutils.DateTimes;
 import java.io.IOException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import store.Util.FileLoader;
@@ -33,14 +31,14 @@ public class Promotions {
             System.out.println("[ERROR] 파일을 읽는 도중 오류가 발생했습니다.");
         }
     }
-    public List<Promotion> getTodayPromotions(LocalDate nowDate) {
+    public List<Promotion> getOngoingPromotions(LocalDate nowDate) {
         return promotions.stream()
                 .filter(promotion -> isWithinPromotionPeriod(promotion, nowDate))
                 .filter(promotion -> !promotion.getName().equals("none")) // "none" 이름 제외
                 .toList();
     }
 
-    private boolean isWithinPromotionPeriod(Promotion promotion, LocalDate nowDate) {
+    public boolean isWithinPromotionPeriod(Promotion promotion, LocalDate nowDate) {
         return !nowDate.isBefore(promotion.getStartDate()) && !nowDate.isAfter(promotion.getEndDate());
     }
 }

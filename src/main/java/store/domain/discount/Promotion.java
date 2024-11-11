@@ -1,4 +1,4 @@
-package store.domain;
+package store.domain.discount;
 
 import java.time.LocalDate;
 
@@ -11,13 +11,24 @@ public class Promotion {
     private final LocalDate startDate;
     private final LocalDate endDate;
 
-    public Promotion(final String name, final int buy, final int free,
+    private Promotion(final String name, final int buy, final int free,
                      final LocalDate startDate, final LocalDate endDate) {
         this.name = name;
         this.buy = buy;
         this.free = free;
         this.startDate = startDate;
         this.endDate = endDate;
+    }
+
+    public static Promotion create(String line) {
+        String[] parts = line.split(LINE_SPLIT_SEPARATOR);
+        String name = parts[0];
+        int buy = Integer.parseInt(parts[1]);
+        int free = Integer.parseInt(parts[2]);
+        LocalDate startDate = LocalDate.parse(parts[3]);
+        LocalDate endDate = LocalDate.parse(parts[4]);
+
+        return new Promotion(name, buy, free, startDate, endDate);
     }
 
     public String getName() {
@@ -38,16 +49,5 @@ public class Promotion {
 
     public LocalDate getEndDate() {
         return endDate;
-    }
-
-    public static Promotion create(String line) {
-        String[] parts = line.split(LINE_SPLIT_SEPARATOR);
-        String name = parts[0];
-        int buy = Integer.parseInt(parts[1]);
-        int free = Integer.parseInt(parts[2]);
-        LocalDate startDate = LocalDate.parse(parts[3]);
-        LocalDate endDate = LocalDate.parse(parts[4]);
-
-        return new Promotion(name, buy, free, startDate, endDate);
     }
 }
