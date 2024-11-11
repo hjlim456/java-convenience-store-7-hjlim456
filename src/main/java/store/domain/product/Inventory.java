@@ -83,6 +83,7 @@ public class Inventory {
     }
 
     private Map<Product, Integer> getFromPromotionProductFirst(List<Product> matchedProducts, Integer count) {
+        validateRemainingStock(matchedProducts, count);
         Map<Product, Integer> purchasedProducts = new LinkedHashMap<>();
         Product promotionalProduct = findProductByPromotion(matchedProducts, true);
         Product nonPromotionalProduct = findProductByPromotion(matchedProducts, false);
@@ -92,7 +93,6 @@ public class Inventory {
             return purchasedProducts;
         }
         remainingRequest = deductQuantity(nonPromotionalProduct, remainingRequest, purchasedProducts);//기본상품에서차감
-        validateRemainingStock(remainingRequest);
         return purchasedProducts;
     }
 
@@ -135,6 +135,7 @@ public class Inventory {
     }
 
     private  Map<Product, Integer> getFromDefaultProductFirst(List<Product> matchedProducts, Integer count) {
+        validateRemainingStock(matchedProducts,count);
         Map<Product, Integer> purchasedProducts = new LinkedHashMap<>();
         Product promotionProduct = findProductByPromotion(matchedProducts, true);
         Product defaultProduct = findProductByPromotion(matchedProducts, false);
@@ -144,12 +145,15 @@ public class Inventory {
             return purchasedProducts;
         }
         remainingRequest = deductQuantity(promotionProduct, remainingRequest, purchasedProducts);
-        validateRemainingStock(remainingRequest);
         return purchasedProducts;
     }
 
-    private static void validateRemainingStock(int remainingRequest) {
-        if (remainingRequest > 0) {
+    private static void validateRemainingStock(List<Product> matchedProducts, int count) {
+        int totalAvailableQuantity = matchedProducts.stream()
+                .mapToInt(Product::getQuantity)
+                .sum();
+
+        if (count > totalAvailableQuantity) {
             throw new IllegalArgumentException("재고 수량을 초과하여 구매할 수 없습니다. 다시 입력해 주세요.");
         }
     }
