@@ -32,7 +32,7 @@ public class OutputView {
         String quantityStatus = getQuantityStatus(product.getQuantity());
         String promotionName = getPromotionNameOrDefault(product.getPromotionName());
 
-        System.out.printf("- %s %s %s %s%n",
+        System.out.printf("- %s %s원 %s %s%n",
                 product.getName(), OUTPUT_FORMAT_MONEY.format(product.getPrice()), quantityStatus, promotionName);
     }
 
