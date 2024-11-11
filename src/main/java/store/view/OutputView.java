@@ -95,7 +95,7 @@ public class OutputView {
     }
 
     private static void printTotalAmount(int totalAmount,int totalQuantity) {
-        System.out.println("==================================");
+        System.out.println("====================================");
         System.out.printf("총구매액\t%d\t%s%n", totalQuantity,OUTPUT_FORMAT_MONEY.format(totalAmount));
     }
 
