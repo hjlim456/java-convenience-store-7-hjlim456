@@ -68,7 +68,7 @@ public class PurchasedProducts {
 
     public void askBuyFullPriceItems(FullPriceProducts fullPriceItems) {
         fullPriceItems.forEach((product, fullPriceQuantity) -> {
-            if (fullPriceQuantity > 0&& product.hasAnyPromotion()) {
+            if (fullPriceQuantity > 0 && product.hasAnyPromotion()) {
                 System.out.printf("현재 %s %d개는 프로모션 할인이 적용되지 않습니다. 그래도 구매하시겠습니까? (Y/N)%n", product.getName(), fullPriceQuantity);
 
                 String userInput = receiveValidatedValue(()->InputView.readYesOrNo());
@@ -147,29 +147,41 @@ public class PurchasedProducts {
         }
     }
     public FullPriceProducts calculateFullPriceProducts(FreeProducts freeProducts) {
-        Map<Product, Integer> fullPriceProduct = new LinkedHashMap<>();
+        Map<String, Integer> aggregatedQuantities = new LinkedHashMap<>();
 
         // "none" 프로모션인 경우 그대로 fullPriceProduct에 추가
         purchasedProducts.forEach((product, quantity) -> {
+            int fullPriceQuantity = 0;
+
             if (product.getPromotionName().equals("none")) {
-                fullPriceProduct.put(product, quantity);
+                fullPriceQuantity = quantity;
             }
             if (!product.getPromotionName().equals("none")){
                 int freeCount = freeProducts.getFreeCount(product); // freeItem 갯수를 가져옴
-                int fullPriceQuantity = 0;
 
                 // 프로모션 이름에 따라 fullPriceQuantity 계산
-                if ("탄산2+1".equals(product.getPromotionName())) {
+                if (product.getPromotionName().equals("탄산2+1")) {
                     fullPriceQuantity = quantity - (freeCount * 3);
                 }
-                if ("반짝할인".equals(product.getPromotionName()) || "MD추천상품".equals(product.getPromotionName())) {
+                if (product.getPromotionName().equals("반짝할인") || product.getPromotionName().equals("MD추천상품")) {
                     fullPriceQuantity = quantity - (freeCount * 2);
                 }
-
-                if (fullPriceQuantity > 0) {
-                    fullPriceProduct.put(product, fullPriceQuantity);
-                }
             }
+
+            // fullPriceQuantity가 0보다 클 때만 추가
+            if (fullPriceQuantity > 0) {
+                aggregatedQuantities.merge(product.getName(), fullPriceQuantity, Integer::sum);
+            }
+        });
+
+        // 최종적으로 Product 객체와 합산된 수량을 fullPriceProduct에 추가
+        Map<Product, Integer> fullPriceProduct = new LinkedHashMap<>();
+        aggregatedQuantities.forEach((productName, totalQuantity) -> {
+            // productName에 해당하는 Product 객체를 가져와 fullPriceProduct에 추가
+            purchasedProducts.keySet().stream()
+                    .filter(product -> product.getName().equals(productName))
+                    .findFirst()
+                    .ifPresent(product -> fullPriceProduct.put(product, totalQuantity));
         });
 
         return new FullPriceProducts(fullPriceProduct);
